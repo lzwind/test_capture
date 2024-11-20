@@ -4,12 +4,10 @@
 
 #include <private/qsgplaintexture_p.h>
 
-#include <QOpenGLDebugMessage>
 #include <QQuickItem>
 class QSGPlainTexture;
 class QRhiTexture;
 class TreelandCaptureContext;
-class QOpenGLDebugLogger;
 
 class Player : public QQuickItem
 {
@@ -36,6 +34,5 @@ private:
     QSGPlainTexture m_texture;
     QRhiTexture *m_rhiTexture{ nullptr };
     QPointer<TreelandCaptureContext> m_captureContext{};
-    QOpenGLDebugLogger *m_logger{ nullptr };
     bool m_loggerInitialized{ false };
 };

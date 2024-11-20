@@ -6,22 +6,16 @@
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <EGL/eglext_angle.h>
-#include <EGL/eglmesaext.h>
-#include <EGL/eglplatform.h>
 #include <GLES2/gl2.h>
 #include <libdrm/drm_fourcc.h>
-#include <private/qsgplaintexture_p.h>
 #include <rhi/qrhi.h>
 
-#include <QOpenGLDebugLogger>
 #include <QSGImageNode>
 #include <QSGTexture>
 
 #include <unistd.h>
 
 Player::Player()
-    : m_logger(new QOpenGLDebugLogger(this))
 {
     setFlag(QQuickItem::ItemHasContents);
 }

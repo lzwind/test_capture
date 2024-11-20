@@ -205,11 +205,6 @@ void TreelandCaptureSession::start()
     Q_EMIT started();
 }
 
-void TreelandCaptureSession::doneFrame()
-{
-    frame_done(m_tvSecHi, m_tvSecLo, m_tvUsec);
-}
-
 void TreelandCaptureSession::treeland_capture_session_v1_frame(int32_t offset_x,
                                                                int32_t offset_y,
                                                                uint32_t width,

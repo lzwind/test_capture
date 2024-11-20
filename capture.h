@@ -115,7 +115,6 @@ public:
     }
 
     void start();
-    void doneFrame();
 Q_SIGNALS:
     void invalid();
     void ready();

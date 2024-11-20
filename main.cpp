@@ -6,9 +6,7 @@
 
 #include <QDir>
 #include <QGuiApplication>
-#include <QOpenGLDebugLogger>
 #include <QQmlApplicationEngine>
-#include <QQmlEngine>
 #include <QQuickWindow>
 #include <QStandardPaths>
 #include <QTimer>
@@ -18,7 +16,6 @@ int main(int argc, char *argv[])
     QGuiApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine;
-    QOpenGLDebugLogger glLogger;
     auto manager = TreelandCaptureManager::instance();
     QObject::connect(
         &engine,
@@ -28,7 +25,7 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
         },
         Qt::QueuedConnection);
-    auto captureWithMask = [&app, manager, &glLogger](::wl_surface *mask) {
+    auto captureWithMask = [&app, manager](::wl_surface *mask) {
         auto captureContext = manager->ensureContext();
         if (!captureContext) {
             app.exit(-1);
@@ -41,44 +38,49 @@ int main(int argc, char *argv[])
                                      false,
                                      mask);
 
-        QObject::connect(manager, &TreelandCaptureManager::finishSelect, manager, [&app, captureContext, manager] {
-            if (manager->record()) {
-                auto session = captureContext->ensureSession();
-                session->start();
-                // Q_EMIT manager->recordStartedChanged();
-                QTimer::singleShot(1000, [manager] {
-                    Q_EMIT manager->recordStartedChanged();
-                });
-            } else {
-                auto frame = captureContext->ensureFrame();
-                QImage result;
-                QEventLoop loop;
-                QObject::connect(frame,
-                                 &TreelandCaptureFrame::ready,
-                                 &app,
-                                 [&result, &loop](QImage image) {
-                                     result = image;
-                                     loop.quit();
-                                 });
-                QObject::connect(frame, &TreelandCaptureFrame::failed, &app, [&loop] {
-                    loop.quit();
-                });
-                loop.exec();
-                if (result.isNull())
-                    app.exit(-1);
-                auto saveBasePath = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-                QDir saveBaseDir(saveBasePath);
-                if (!saveBaseDir.exists())
-                    app.exit(-1);
-                QString picName =
-                    "portal screenshot - " + QDateTime::currentDateTime().toString() + ".png";
-                if (result.save(saveBaseDir.absoluteFilePath(picName), "PNG")) {
-                    qDebug() << saveBaseDir.absoluteFilePath(picName);
+        QObject::connect(
+            manager,
+            &TreelandCaptureManager::finishSelect,
+            manager,
+            [&app, captureContext, manager] {
+                if (manager->record()) {
+                    auto session = captureContext->ensureSession();
+                    session->start();
+                    // Q_EMIT manager->recordStartedChanged();
+                    QTimer::singleShot(1000, [manager] {
+                        Q_EMIT manager->recordStartedChanged();
+                    });
                 } else {
-                    app.exit(-1);
+                    auto frame = captureContext->ensureFrame();
+                    QImage result;
+                    QEventLoop loop;
+                    QObject::connect(frame,
+                                     &TreelandCaptureFrame::ready,
+                                     &app,
+                                     [&result, &loop](QImage image) {
+                                         result = image;
+                                         loop.quit();
+                                     });
+                    QObject::connect(frame, &TreelandCaptureFrame::failed, &app, [&loop] {
+                        loop.quit();
+                    });
+                    loop.exec();
+                    if (result.isNull())
+                        app.exit(-1);
+                    auto saveBasePath =
+                        QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+                    QDir saveBaseDir(saveBasePath);
+                    if (!saveBaseDir.exists())
+                        app.exit(-1);
+                    QString picName =
+                        "portal screenshot - " + QDateTime::currentDateTime().toString() + ".png";
+                    if (result.save(saveBaseDir.absoluteFilePath(picName), "PNG")) {
+                        qDebug() << saveBaseDir.absoluteFilePath(picName);
+                    } else {
+                        app.exit(-1);
+                    }
                 }
-            }
-        });
+            });
     };
     QObject::connect(
         &engine,

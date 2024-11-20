@@ -1,3 +1,6 @@
+// Copyright (C) 2024 Dingyuan Zhang <lxz@mkacg.com>.
+// SPDX-License-Identifier: Apache-2.0 OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
 import QtQuick
 import QtQuick.Controls
 import capture
@@ -68,9 +71,6 @@ Window {
             width: 100
             height: 100
             captureContext: TreelandCaptureManager.context
-        }
-        onVisibleChanged: {
-            console.log("player visible:", visible)
         }
     }
 }
