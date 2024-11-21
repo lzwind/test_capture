@@ -4,6 +4,8 @@
 
 #include <QWidget>
 #include <QPointer>
+#include <GLES2/gl2.h>
+#include <EGL/egl.h>
 
 class QOpenGLContext;
 class QOpenGLTexture;

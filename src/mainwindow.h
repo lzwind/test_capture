@@ -24,11 +24,13 @@ private slots:
     void initializeCapture();
     void handleCaptureFinish();
 
+    void slotRecoderShow();
+
 private:
     void setupUI();
     void setupConnections();
 
-    SubWindow *m_toolBar;
+    SubWindow *m_toolBar = nullptr;
     QLabel *m_watermark;
     QPushButton *m_watermarkBtn;
     QPushButton *m_recordBtn;
