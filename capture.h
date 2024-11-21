@@ -8,15 +8,11 @@
 #include <private/qwaylandclientextension_p.h>
 #include <private/qwaylandshmbackingstore_p.h>
 
-#include <QQmlEngine>
-#include <qqmlregistration.h>
-
 class TreelandCaptureFrame
     : public QObject
     , public QtWayland::treeland_capture_frame_v1
 {
     Q_OBJECT
-    QML_ELEMENT
 public:
     TreelandCaptureFrame(struct ::treeland_capture_frame_v1 *object, QObject *parent = nullptr);
     ~TreelandCaptureFrame() override;
@@ -71,7 +67,6 @@ class TreelandCaptureSession
     , public QtWayland::treeland_capture_session_v1
 {
     Q_OBJECT
-    QML_ELEMENT
     Q_PROPERTY(bool started READ started NOTIFY startedChanged FINAL)
 
 public:
@@ -162,11 +157,9 @@ class TreelandCaptureContext
     , public QtWayland::treeland_capture_context_v1
 {
     Q_OBJECT
-    QML_ELEMENT
     Q_PROPERTY(TreelandCaptureFrame* frame READ frame NOTIFY frameChanged FINAL)
     Q_PROPERTY(TreelandCaptureSession* session READ session NOTIFY sessionChanged FINAL)
     Q_PROPERTY(QRectF captureRegion READ captureRegion NOTIFY captureRegionChanged FINAL)
-    QML_UNCREATABLE("Managed by C++.")
 
 public:
     using QtWayland::treeland_capture_context_v1::source_type;
@@ -225,16 +218,12 @@ class TreelandCaptureManager
     , public QtWayland::treeland_capture_manager_v1
 {
     Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
-    QML_UNCREATABLE("Managed by C++.")
     Q_PROPERTY(TreelandCaptureContext* context READ context NOTIFY contextChanged FINAL)
     Q_PROPERTY(bool record READ record WRITE setRecord NOTIFY recordChanged FINAL)
     Q_PROPERTY(bool recordStarted READ recordStarted NOTIFY recordStartedChanged FINAL)
 
 public:
     static TreelandCaptureManager *instance();
-    static TreelandCaptureManager *create(QQmlEngine *, QJSEngine *);
 
     ~TreelandCaptureManager() override;
 

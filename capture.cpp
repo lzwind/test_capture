@@ -26,13 +26,6 @@ TreelandCaptureManager *TreelandCaptureManager::instance()
     return &manager;
 }
 
-TreelandCaptureManager *TreelandCaptureManager::create(QQmlEngine *, QJSEngine *)
-{
-    auto manager = instance();
-    QQmlEngine::setObjectOwnership(manager, QQmlEngine::CppOwnership);
-    return manager;
-}
-
 TreelandCaptureManager::TreelandCaptureManager()
     : QWaylandClientExtensionTemplate<TreelandCaptureManager>(1)
     , QtWayland::treeland_capture_manager_v1()
