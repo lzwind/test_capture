@@ -1,48 +1,62 @@
 cmake_minimum_required(VERSION 3.21)
-project(test-capture)
+project(test-capture VERSION 0.1 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
 find_package(PkgConfig REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui WaylandClient Quick)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui WaylandClient Widgets)
 find_package(TreelandProtocols REQUIRED)
-qt_standard_project_setup(REQUIRES 6.6)
 pkg_check_modules(EGL REQUIRED IMPORTED_TARGET egl gl)
-qt_add_executable(test-capture
-    main.cpp
-)
-qt_add_qml_module(test-capture
-    URI capture
-    VERSION 2.0
-    SOURCES
-    capture.h
-    capture.cpp
-    subwindow.h
-    subwindow.cpp
-    player.h
-    player.cpp
-    QML_FILES
-    Main.qml
+
+set(PROJECT_SOURCES
+    src/main.cpp
+    src/mainwindow.h
+    src/mainwindow.cpp
+    src/subwindow.h
+    src/subwindow.cpp
+    src/capture.h
+    src/capture.cpp
+    src/player.h
+    src/player.cpp
 )
 
-qt_add_resources(test-capture "test_capture_assets"
+qt_add_executable(${PROJECT_NAME}
+    ${PROJECT_SOURCES}
+)
+
+qt_add_resources(${PROJECT_NAME} "assets"
     PREFIX "/"
-    BASE ${CMAKE_CURRENT_LIST_DIR}/images
+    BASE ${CMAKE_CURRENT_SOURCE_DIR}/images
     FILES
-        ${CMAKE_CURRENT_LIST_DIR}/images/watermark.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/images/watermark.png
 )
 
-qt6_generate_wayland_protocol_client_sources(test-capture
+qt6_generate_wayland_protocol_client_sources(${PROJECT_NAME}
     FILES
         ${TREELAND_PROTOCOLS_DATA_DIR}/treeland-capture-unstable-v1.xml
 )
 
-target_link_libraries(test-capture
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt6::Core
         Qt6::Gui
         Qt6::WaylandClient
         Qt6::WaylandClientPrivate
-        Qt6::Quick
-        Qt6::QuickPrivate
+        Qt6::Widgets
         PkgConfig::EGL
 )
 
-install(TARGETS test-capture RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS ${PROJECT_NAME}
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

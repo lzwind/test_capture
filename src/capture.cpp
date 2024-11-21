@@ -189,13 +189,16 @@ TreelandCaptureSession::TreelandCaptureSession(::treeland_capture_session_v1 *ob
 {
 }
 
-TreelandCaptureSession::~TreelandCaptureSession() { }
+TreelandCaptureSession::~TreelandCaptureSession()
+{
+    destroy();
+}
 
 void TreelandCaptureSession::start()
 {
     QtWayland::treeland_capture_session_v1::start();
     m_started = true;
-    Q_EMIT started();
+    Q_EMIT startedChanged();
 }
 
 void TreelandCaptureSession::treeland_capture_session_v1_frame(int32_t offset_x,
@@ -247,7 +250,10 @@ void TreelandCaptureSession::treeland_capture_session_v1_ready(uint32_t tv_sec_h
     Q_EMIT ready();
 }
 
-void TreelandCaptureSession::treeland_capture_session_v1_cancel(uint32_t reason) { }
+void TreelandCaptureSession::treeland_capture_session_v1_cancel(uint32_t reason)
+{
+    // Handle cancellation if needed
+}
 
 void TreelandCaptureManager::setRecord(bool newRecord)
 {
