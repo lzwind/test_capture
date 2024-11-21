@@ -18,15 +18,16 @@
 #include <QTimer>
 #include <QApplication>
 #include <QWindow>
+#include "subwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowTransparentForInput);
+
     
     setupUI();
-    setupConnections();
     
     // 初始化截图/录屏管理器
     auto manager = TreelandCaptureManager::instance();
@@ -55,20 +56,6 @@ void MainWindow::setupUI()
     m_watermark = new QLabel(this);
     m_watermark->setPixmap(QPixmap(":/watermark.png"));
     m_watermark->hide();
-    
-    // 创建工具栏
-    m_toolBar = new SubWindow(this);
-    auto toolBarLayout = new QHBoxLayout(m_toolBar);
-    
-    m_watermarkBtn = new QPushButton("Show watermark", m_toolBar);
-    m_recordBtn = new QPushButton("Record", m_toolBar);
-    m_finishBtn = new QPushButton("Finish", m_toolBar);
-    
-    toolBarLayout->addWidget(m_watermarkBtn);
-    toolBarLayout->addWidget(m_recordBtn);
-    toolBarLayout->addWidget(m_finishBtn);
-    
-    m_toolBar->setLayout(toolBarLayout);
 
     // 创建播放器窗口
     m_player = new Player();
@@ -83,12 +70,6 @@ void MainWindow::setupConnections()
             this, &MainWindow::onRecordToggled);
     connect(m_finishBtn, &QPushButton::clicked, 
             this, &MainWindow::onFinishClicked);
-    
-    auto manager = TreelandCaptureManager::instance();
-    connect(manager->context(), &TreelandCaptureContext::captureRegionChanged,
-            this, &MainWindow::updateCaptureRegion);
-    connect(manager, &TreelandCaptureManager::recordStartedChanged,
-            m_player, &QWidget::setVisible);
 }
 
 void MainWindow::initializeCapture()
@@ -100,8 +81,15 @@ void MainWindow::initializeCapture()
         return;
     }
 
+
+
     auto waylandWindow = static_cast<QtWaylandClient::QWaylandWindow *>(windowHandle()->handle());
-    
+
+    connect(manager->context(), &TreelandCaptureContext::captureRegionChanged,
+            this, &MainWindow::updateCaptureRegion);
+
+    connect(manager, &TreelandCaptureManager::recordStartedChanged,
+            this, &MainWindow::slotRecoderShow);
     captureContext->selectSource(
         TreelandCaptureContext::source_type_output
         | TreelandCaptureContext::source_type_window
@@ -172,6 +160,14 @@ void MainWindow::handleCaptureFinish()
     }
 }
 
+void MainWindow::slotRecoderShow()
+{
+    if(m_player)
+    {
+        m_player->show();
+    }
+}
+
 void MainWindow::onWatermarkToggled()
 {
     m_watermarkVisible = !m_watermarkVisible;
@@ -196,10 +192,41 @@ void MainWindow::updateCaptureRegion()
     auto context = TreelandCaptureManager::instance()->context();
     if (!context) return;
     
-    QRect region = context->captureRegion();
+    QRect region = context->captureRegion().toRect();
     m_watermark->setGeometry(region);
+
+
+    if(!m_toolBar)
+    {
+        // 创建工具栏
+        m_toolBar = new SubWindow(this);
+
+        auto toolBarLayout = new QHBoxLayout(m_toolBar);
+
+        m_watermarkBtn = new QPushButton("Show watermark", m_toolBar);
+        m_recordBtn = new QPushButton("Record", m_toolBar);
+        m_finishBtn = new QPushButton("Finish", m_toolBar);
+
+        toolBarLayout->addWidget(m_watermarkBtn);
+        toolBarLayout->addWidget(m_recordBtn);
+        toolBarLayout->addWidget(m_finishBtn);
+
+        m_toolBar->setLayout(toolBarLayout);
+          setupConnections();
+    }
     
     // 更新工具栏位置
     m_toolBar->move(region.x(),
                    qMin(region.bottom(), height() - 2 * m_toolBar->height()));
+
+    m_toolBar->show();
+    if(windowHandle()&&m_toolBar->windowHandle())
+    {
+        if(m_toolBar->windowHandle()->parent() != windowHandle())
+        {
+            m_toolBar->windowHandle()->setParent(windowHandle());
+            m_toolBar->show();
+        }
+    }
+
 }
